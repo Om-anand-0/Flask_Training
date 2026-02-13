@@ -21,7 +21,7 @@ def home():
 def add():
     admin = User(name = "om", role = "student", email = "com@yahoo.com")
     db.session.add(admin)
-    db.session.commit()r
+    db.session.commit()
     return f"<p>added {admin.name} with id {admin.id}</p>"
 
 @app.route("/show")
