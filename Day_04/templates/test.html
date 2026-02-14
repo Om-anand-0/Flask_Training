@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AMONG US - USER DIRECTORY</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+      @font-face {
+        font-family: 'AmongUs';
+        src: url('https://fonts.cdnfonts.com/s/73918/AmongUs-Regular.woff') format('woff');
+      }
+
+      body {
+        background-color: #000;
+        background-image: radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px);
+        background-size: 550px 550px;
+        color: #fff;
+        font-family: 'Courier New', Courier, monospace; /* Fallback for the thick look */
+        overflow-x: hidden;
+        animation: star-drift 100s linear infinite;
+      }
+
+      @keyframes star-drift {
+        from { background-position: 0 0; }
+        to { background-position: 550px 1100px; }
+      }
+
+      /* THE HEADER */
+      h1 {
+        color: #ff0000;
+        font-weight: 900;
+        text-shadow: 4px 4px 0px #800000;
+        letter-spacing: 3px;
+        animation: pulse-red 1.5s infinite alternate;
+        margin-top: 30px;
+      }
+
+      @keyframes pulse-red {
+        from { transform: scale(1); filter: drop-shadow(0 0 5px red); }
+        to { transform: scale(1.05); filter: drop-shadow(0 0 20px red); }
+      }
+
+      /* THE TABLE - SKELD STYLE */
+      .table-container {
+        background: #2c3e50;
+        border: 8px solid #000;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: inset 0 0 20px #000;
+      }
+
+      .table {
+        color: #fff !important;
+        border-color: #1a252f !important;
+      }
+
+      th {
+        color: #50f2f2 !important; /* Task Light Blue */
+        text-transform: uppercase;
+        border-bottom: 4px solid #000 !important;
+      }
+
+      tr:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        cursor: pointer;
+      }
+
+      /* THE IMPOSTOR EFFECT */
+      tr:nth-child(even):hover td:nth-child(2) {
+        color: #ff0000 !important;
+        font-weight: bold;
+      }
+      
+      tr:nth-child(even):hover td:nth-child(2)::after {
+        content: " (SUS)";
+        font-size: 0.8rem;
+      }
+
+      /* EMERGENCY BUTTON */
+      .emergency-btn {
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, #ff0000, #800000);
+        border: 10px solid #000;
+        border-radius: 50%;
+        margin: 50px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 15px 0 #400000;
+        transition: 0.1s;
+        cursor: pointer;
+      }
+
+      .emergency-btn:active {
+        box-shadow: 0 5px 0 #400000;
+        transform: translateY(10px);
+      }
+
+      /* THE "EJECTED" ANIMATION */
+      #eject-screen {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: black;
+        z-index: 10000;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .floating-text {
+        font-size: 2.5rem;
+        white-space: nowrap;
+        animation: float-across 4s linear forwards;
+      }
+
+      @keyframes float-across {
+        from { transform: translateX(100vw) rotate(0deg); }
+        to { transform: translateX(-100vw) rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="eject-screen">
+        <div class="floating-text" id="eject-msg">User was an Impostor.</div>
+    </div>
+
+    <div class="container text-center">
+      <h1>EMERGENCY MEETING</h1>
+      
+      <div class="table-container mt-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Crewmate Name</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>01</td><td>Red</td><td>Sus</td></tr>
+                <tr><td>02</td><td>Cyan</td><td>Doing Tasks</td></tr>
+                {% for user in users %}
+                <tr onclick="ejectUser('{{ user.name }}')">
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.role }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+      </div>
+
+      <div class="emergency-btn" onclick="location.reload()">
+          REPORT
+      </div>
+    </div>
+
+    <script>
+      function ejectUser(name) {
+        const screen = document.getElementById('eject-screen');
+        const msg = document.getElementById('eject-msg');
+        msg.innerText = `${name} was ejected.`;
+        screen.style.display = 'flex';
+        
+        setTimeout(() => {
+          screen.style.display = 'none';
+        }, 4000);
+      }
+    </script>
+  </body>
+</html>
