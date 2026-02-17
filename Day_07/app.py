@@ -33,7 +33,11 @@ class Task(db.Model):
     description = db.Column(db.String(200), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('tasks', lazy=True))
-    
+    status = db.Column(
+    db.Enum('pending', 'in_progress', 'completed', name='task_status'),
+    nullable=False,
+    default='pending'
+)
 
 
 #############################################
@@ -119,18 +123,26 @@ def tasks():
 @app.route('/admin')
 @is_admin
 def admin():
-    user = User.query.filter_by(username=session['username']).first()
-    all_tasks = Task.query.all()
-    return render_template('tasks.html', tasks=all_tasks, user=user, is_admin_view=True)
+    current_user = User.query.filter_by(username=session['username']).first()
+    users = User.query.all()
+    tasks = Task.query.all()
+    return render_template('admin.html', user=current_user, users=users, tasks=tasks)
 
 @app.route('/logout')
 def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
-@app.route('/add_admin', methods=['POST'])
-@is_admin
+@app.route('/add_admin', methods=['GET', 'POST'])
 def add_admin():
+    if 'username' in session:
+        current_user = User.query.filter_by(username=session['username']).first()
+        if current_user and current_user.role == 'admin':
+            return redirect(url_for('admin'))
+            
+    if request.method == 'GET':
+        return render_template('register.html', action_url=url_for('add_admin'))
+    
     username = request.form['username']
     email = request.form['email']
     password = request.form['password']
@@ -139,7 +151,7 @@ def add_admin():
     new_user = User(username=username, email=email, password=hashed_password, role=role)
     db.session.add(new_user)
     db.session.commit()
-    return redirect(url_for('admin'))
+    return redirect(url_for('login'))
 
 
 @app.route('/add_user', methods=['POST'])
@@ -161,7 +173,8 @@ def add_task():
     title = request.form['title']
     description = request.form['description']
     user = User.query.filter_by(username=session['username']).first()
-    new_task = Task(title=title, description=description, user_id=user.id)
+    status = 'pending'
+    new_task = Task(title=title, description=description, user_id=user.id, status=status)
     db.session.add(new_task)
     db.session.commit()
     return redirect(url_for('tasks'))
@@ -182,14 +195,39 @@ def delete_task(task_id):
          return redirect(url_for('admin'))
     return redirect(url_for('tasks'))   
 
+@app.route('/update_task/<int:task_id>', methods=['POST'])
+@validate_user
+def update_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    current_user = User.query.filter_by(username=session['username']).first()
+    
+    if current_user.role != 'admin' and task.user_id != current_user.id:
+        return 'Unauthorized'
+        
+    task.status = request.form['status']
+    db.session.commit()
 
+    if current_user.role == 'admin' and request.referrer and 'admin' in request.referrer:
+         return redirect(url_for('admin'))
+    return redirect(url_for('tasks'))
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+@is_admin
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    # Delete all tasks associated with the user first
+    Task.query.filter_by(user_id=user.id).delete()
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('admin'))
 
 @app.route('/show_user_tasks/<int:user_id>')
 @validate_user
 def show_user_tasks(user_id):
-    user = User.query.get_or_404(user_id)
+    viewed_user = User.query.get_or_404(user_id)
+    current_user = User.query.filter_by(username=session['username']).first()
     tasks = Task.query.filter_by(user_id=user_id).all()
-    return render_template('tasks.html', tasks=tasks, user=user)   
+    return render_template('tasks.html', tasks=tasks, user=current_user)   
 
 if __name__ == '__main__':
     with app.app_context():

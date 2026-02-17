@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Register</h1>
-    <form action="{{ url_for('register') }}" method="POST">
+    <form action="{{ action_url or url_for('register') }}" method="POST">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required><br><br>
         <label for="email">Email:</label>
