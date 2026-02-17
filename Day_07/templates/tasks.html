@@ -29,6 +29,7 @@
                 <th>Title</th>
                 <th>Description</th>
                 <th>Owner</th>
+                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -39,14 +40,27 @@
                 <td>{{ task.title }}</td>
                 <td>{{ task.description }}</td>
                 <td>{{ task.user.username }}</td>
+                <td>{{ task.status }}</td>
                 <td>
                     {% if user.role == 'admin' or task.user_id == user.id %}
                     <form action="{{ url_for('delete_task', task_id=task.id) }}" method="POST" style="display:inline;">
                         <button type="submit">Delete</button>
                     </form>
                     {% endif %}
+                    {% if user.id == task.user_id %}
+                    <form action="{{ url_for('update_task', task_id=task.id) }}" method="POST" style="display:inline;">
+                        <select name="status">
+                            <option value="pending" {% if task.status=='pending' %}selected{% endif %}>Pending</option>
+                            <option value="in_progress" {% if task.status=='in_progress' %}selected{% endif %}>In
+                                Progress</option>
+                            <option value="completed" {% if task.status=='completed' %}selected{% endif %}>Completed
+                            </option>
+                        </select>
+                        <button type="submit">Update</button>
+                    </form>
+                    {% endif %}
                 </td>
-            </tr>
+            </tr>   
             {% endfor %}
         </tbody>
     </table>
