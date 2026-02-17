@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks</title>
+</head>
+<body>
+    <h1>Tasks</h1>
+    <h2>Welcome, {{ user.username }}</h2>
+    <a href="{{ url_for('logout') }}">Logout</a>
+    <hr>
+
+    <h3>Add Task</h3>
+    <form action="{{ url_for('add_task') }}" method="POST">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required><br><br>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea><br><br>
+        <button type="submit">Add Task</button>
+    </form>
+    <hr>
+
+    <h3>All Tasks</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Owner</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.id }}</td>
+                <td>{{ task.title }}</td>
+                <td>{{ task.description }}</td>
+                <td>{{ task.user.username }}</td>
+                <td>
+                    {% if user.role == 'admin' or task.user_id == user.id %}
+                    <form action="{{ url_for('delete_task', task_id=task.id) }}" method="POST" style="display:inline;">
+                        <button type="submit">Delete</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
