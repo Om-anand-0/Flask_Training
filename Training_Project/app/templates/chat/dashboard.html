@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime Chat | Dashboard</title>
+</head>
+
+<body style="margin:0; font-family: Arial, Helvetica, sans-serif; background-color:#f4f6f8;">
+
+    <!-- Navbar -->
+    <nav style="background-color:#1f2937; color:white; padding:15px 30px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1 style="margin:0; font-size:22px;">Realtime Chat</h1>
+            <a href="{{ url_for('auth.logout') }}"
+                style="color:white; text-decoration:none; background-color:#ef4444; padding:8px 14px; border-radius:6px;">
+                Logout
+            </a>
+        </div>
+    </nav>
+
+    <main style="padding:30px;">
+
+        <div style="display:flex; gap:30px; align-items:flex-start;">
+
+            <!-- Profile Section -->
+            <div
+                style="width:300px; background:white; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+
+                <div style="text-align:center;">
+
+                    <img src="{{ url_for('static', filename='images/' + current_user.avatar_url) }}" alt="Avatar"
+                        width="120" height="120" style="border-radius:50%; margin-bottom:10px;">
+
+                    <h2 style="margin:10px 0 5px 0;">{{ current_user.username }}</h2>
+                    <p style="margin:0; color:#6b7280;">{{ current_user.email }}</p>
+
+                    <div style="margin-top:10px; font-size:14px; color:#374151;">
+                        <span>Member Since:</span>
+                        <span style="font-weight:bold;">
+                            {{ current_user.created_at.strftime('%b %Y') }}
+                        </span>
+                    </div>
+
+                    <div style="margin-top:20px;">
+                        <a href="{{ url_for('chat.create_room') }}"
+                            style="display:inline-block; background-color:#2563eb; color:white; padding:10px 16px; border-radius:6px; text-decoration:none;">
+                            Create New Room
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Rooms Section -->
+            <div style="flex:1; display:flex; gap:20px; flex-wrap:wrap;">
+
+                <!-- Your Rooms -->
+                <section
+                    style="flex:1; min-width:300px; background:white; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+
+                    <h3 style="margin-top:0;">Your Rooms</h3>
+
+                    {% if rooms %}
+
+                    <div>
+
+                        {% for room in rooms %}
+
+                        <div
+                            style="border:1px solid #e5e7eb; padding:12px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+
+                            <div>
+                                <h4 style="margin:0;"># {{ room.name }}</h4>
+                                <p style="margin:3px 0; font-size:14px; color:#6b7280;">
+                                    {{ room.description or 'No description available.' }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <a href="{{ url_for('chat.chat_room', room_id=room.id|int) }}"
+                                    style="background-color:#10b981; color:white; padding:6px 12px; border-radius:6px; text-decoration:none;">
+                                    Enter
+                                </a>
+                            </div>
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                    {% else %}
+
+                    <div>
+                        <p style="color:#6b7280;">You haven't joined any rooms yet.</p>
+                    </div>
+
+                    {% endif %}
+
+                </section>
+
+
+                <!-- All Rooms -->
+                <section
+                    style="flex:1; min-width:300px; background:white; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+
+                    <h3 style="margin-top:0;">All Available Rooms</h3>
+
+                    {% if all_rooms %}
+
+                    <div>
+
+                        {% for room in all_rooms %}
+
+                        <div
+                            style="border:1px solid #e5e7eb; padding:12px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+
+                            <div>
+                                <h4 style="margin:0;"># {{ room.name }}</h4>
+                                <p style="margin:3px 0; font-size:14px; color:#6b7280;">
+                                    {{ room.description or 'No description available.' }}
+                                </p>
+                            </div>
+
+                            <div>
+
+                                {% if room in rooms %}
+
+                                <a href="{{ url_for('chat.chat_room', room_id=room.id) }}"
+                                    style="background-color:#10b981; color:white; padding:6px 12px; border-radius:6px; text-decoration:none;">
+                                    Enter
+                                </a>
+
+                                {% else %}
+
+                                <form action="{{ url_for('chat.join_room_http', room_id=room.id) }}" method="POST"
+                                    style="display:inline;">
+
+                                    <button type="submit"
+                                        style="background-color:#2563eb; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
+                                        Join Room
+                                    </button>
+
+                                </form>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                    {% else %}
+
+                    <p style="color:#6b7280;">
+                        No rooms exist yet. Why not create one?
+                    </p>
+
+                    {% endif %}
+
+                </section>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>
